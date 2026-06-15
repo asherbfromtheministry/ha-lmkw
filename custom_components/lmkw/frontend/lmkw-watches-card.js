@@ -106,6 +106,7 @@ class LmkwWatchesCard extends HTMLElement {
   }
 
   _renderWatch(s) {
+    const watchId = String(s.attributes.watch_id ?? s.entity_id);
     const title =
       s.attributes.display_title ||
       s.attributes.query_text ||
@@ -115,22 +116,69 @@ class LmkwWatchesCard extends HTMLElement {
     const status = s.state || "monitoring";
     const meta = this._statusMeta(status);
     const checked = this._relTime(s.attributes.last_checked_at);
+    const detected = this._relTime(s.attributes.latest_detected_at);
     const tags = Array.isArray(s.attributes.tags) ? s.attributes.tags.slice(0, 3) : [];
-    const summary = this._summarySnippet(s.attributes.latest_summary);
+    const fullSummary = String(s.attributes.latest_summary ?? "").replace(/\s+/g, " ").trim();
+    const facts = Array.isArray(s.attributes.latest_facts) ? s.attributes.latest_facts : [];
+    const sources = Array.isArray(s.attributes.latest_sources) ? s.attributes.latest_sources : [];
     const hasHit = status === "update_found";
+    const hasDetail = Boolean(fullSummary || facts.length || sources.length);
+    const preview = this._summarySnippet(fullSummary, 140);
 
     const tagHtml = tags.length
       ? `<div class="tags">${tags.map((t) => `<span class="tag">${this._escape(t)}</span>`).join("")}</div>`
       : "";
 
-    const insightHtml = summary
-      ? `<p class="insight">${this._escape(summary)}</p>`
+    const factsHtml = facts.length
+      ? `<ul class="detail-facts">${facts
+          .slice(0, 8)
+          .map((f) => {
+            const label = this._escape(f?.label || "");
+            const value = this._escape(f?.value || "");
+            if (!label || !value) return "";
+            return `<li><span class="detail-fact-label">${label}</span><span class="detail-fact-value">${value}</span></li>`;
+          })
+          .filter(Boolean)
+          .join("")}</ul>`
+      : "";
+
+    const sourcesHtml = sources.length
+      ? `<ul class="detail-sources">${sources
+          .slice(0, 6)
+          .map((src) => {
+            const st = this._escape(src?.title || src?.url || "Source");
+            const su = this._escape(src?.url || "#");
+            return `<li><a href="${su}" target="_blank" rel="noopener">${st}</a></li>`;
+          })
+          .join("")}</ul>`
+      : "";
+
+    const detailHtml = hasDetail
+      ? `<details class="watch-detail"${hasHit ? " open" : ""}>
+          <summary class="detail-toggle">
+            <span class="detail-toggle-label">Ranger report</span>
+            <ha-icon class="detail-chevron" icon="mdi:chevron-down"></ha-icon>
+          </summary>
+          <div class="detail-panel">
+            ${fullSummary ? `<p class="detail-summary">${this._escape(fullSummary)}</p>` : ""}
+            ${factsHtml}
+            ${sourcesHtml}
+            ${detected ? `<p class="detail-meta">Reported ${this._escape(detected)}</p>` : ""}
+          </div>
+        </details>`
       : hasHit
         ? `<p class="insight insight--pulse">Tracks spotted on the savannah - open for the report</p>`
         : "";
 
+    const previewHtml =
+      !hasDetail && preview
+        ? `<p class="insight">${this._escape(preview)}</p>`
+        : !hasDetail && hasHit
+          ? `<p class="insight insight--pulse">Tracks spotted on the savannah - open for the report</p>`
+          : "";
+
     return `
-      <a class="watch ${hasHit ? "watch--update" : ""}" href="${this._escape(url)}" target="_blank" rel="noopener" style="--watch-accent:${meta.accent};--watch-lamp:${meta.lamp}">
+      <div class="watch ${hasHit ? "watch--update" : ""}" data-watch-id="${this._escape(watchId)}" style="--watch-accent:${meta.accent};--watch-lamp:${meta.lamp}">
         <div class="watch-accent" aria-hidden="true"></div>
         <div class="watch-body">
           <div class="watch-top">
@@ -147,13 +195,14 @@ class LmkwWatchesCard extends HTMLElement {
               <span>${this._escape(meta.label)}</span>
             </div>
           </div>
-          ${insightHtml}
+          ${previewHtml}
+          ${detailHtml}
           <div class="watch-foot">
             <span class="watch-time">${checked ? `Checked ${this._escape(checked)}` : "Awaiting sync"}</span>
-            <span class="watch-open">Open <ha-icon icon="mdi:arrow-top-right"></ha-icon></span>
+            <a class="watch-open" href="${this._escape(url)}" target="_blank" rel="noopener">Open <ha-icon icon="mdi:arrow-top-right"></ha-icon></a>
           </div>
         </div>
-      </a>`;
+      </div>`;
   }
 
   _render() {
@@ -366,7 +415,6 @@ class LmkwWatchesCard extends HTMLElement {
         }
 
         .watch:hover {
-          transform: translateY(-2px);
           border-color: rgba(255, 255, 255, 0.16);
           background: rgba(255, 255, 255, 0.05);
           box-shadow:
@@ -511,6 +559,115 @@ class LmkwWatchesCard extends HTMLElement {
           overflow: hidden;
         }
 
+        .insight--preview {
+          margin-bottom: 0.15rem;
+        }
+
+        .watch-detail {
+          margin-top: 0.55rem;
+          border-radius: 10px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(0, 0, 0, 0.18);
+          overflow: hidden;
+        }
+
+        .detail-toggle {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+          padding: 0.48rem 0.62rem;
+          cursor: pointer;
+          list-style: none;
+          font-size: 0.68rem;
+          font-weight: 800;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          color: rgba(100, 181, 246, 0.95);
+          user-select: none;
+        }
+
+        .detail-toggle::-webkit-details-marker {
+          display: none;
+        }
+
+        .detail-toggle-label {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+        }
+
+        .detail-chevron {
+          --mdc-icon-size: 1rem;
+          transition: transform 0.2s ease;
+          opacity: 0.85;
+        }
+
+        .watch-detail[open] .detail-chevron {
+          transform: rotate(180deg);
+        }
+
+        .detail-panel {
+          padding: 0 0.65rem 0.65rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .detail-summary {
+          margin: 0.55rem 0 0;
+          font-size: 0.76rem;
+          line-height: 1.45;
+          color: var(--lmkw-ink);
+          white-space: pre-wrap;
+        }
+
+        .detail-facts,
+        .detail-sources {
+          margin: 0.55rem 0 0;
+          padding: 0;
+          list-style: none;
+          display: grid;
+          gap: 0.35rem;
+        }
+
+        .detail-facts li {
+          display: grid;
+          gap: 0.1rem;
+          font-size: 0.72rem;
+          line-height: 1.35;
+          padding: 0.35rem 0.45rem;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.04);
+        }
+
+        .detail-fact-label {
+          font-weight: 700;
+          color: var(--lmkw-teal);
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          font-size: 0.62rem;
+        }
+
+        .detail-fact-value {
+          color: var(--lmkw-muted);
+        }
+
+        .detail-sources a {
+          color: rgba(100, 181, 246, 0.95);
+          text-decoration: none;
+          font-size: 0.72rem;
+          line-height: 1.35;
+        }
+
+        .detail-sources a:hover {
+          text-decoration: underline;
+        }
+
+        .detail-meta {
+          margin: 0.55rem 0 0;
+          font-size: 0.64rem;
+          color: rgba(232, 237, 245, 0.45);
+        }
+
         .insight--pulse {
           color: rgba(100, 181, 246, 0.95);
         }
@@ -535,6 +692,11 @@ class LmkwWatchesCard extends HTMLElement {
           letter-spacing: 0.04em;
           text-transform: uppercase;
           color: rgba(100, 181, 246, 0.92);
+          text-decoration: none;
+        }
+
+        .watch-open:hover {
+          text-decoration: underline;
         }
 
         .watch-open ha-icon {
