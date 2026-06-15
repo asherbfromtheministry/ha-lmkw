@@ -92,9 +92,14 @@ max_items: 20
 
 ## Brand icon
 
-Icons live at `custom_components/lmkw/brand/` (`icon.png`, `dark_icon.png`, `logo.png`). **Optional:** Home Assistant **2026.3+** serves these locally. On older HA versions the integration still works; the settings icon may show a generic placeholder because `lmkw` is not on the global brands CDN.
+## Brand icon
 
-If you see **“icon not available”** on an older Home Assistant version, that is cosmetic only — you do not need to upgrade HA unless you want the elephant icon in the UI.
+Two mechanisms (use both if you can):
+
+1. **All HA versions:** icon on [home-assistant/brands](https://github.com/home-assistant/brands) CDN (`/_/lmkw/icon.png`). See `brands-submission/` in this repo for files to PR.
+2. **HA 2026.3+:** inline `custom_components/lmkw/brand/` (served locally).
+
+HACS does **not** require a minimum Home Assistant version in `hacs.json`. If install is blocked for “2026.3.0”, you are on an **old integration version** (e.g. 0.1.2) — pick **0.1.4** or the default branch, or HACS → ⋮ → **Clear new data cache** and retry.
 
 ## Lmkw server database
 
