@@ -92,16 +92,9 @@ max_items: 20
 
 ## Brand icon
 
-Icons live at `custom_components/lmkw/brand/` (`icon.png`, `dark_icon.png`, `logo.png`). **Requires Home Assistant 2026.3 or newer** — HA serves them via `/api/brands/integration/lmkw/icon.png`.
+Icons live at `custom_components/lmkw/brand/` (`icon.png`, `dark_icon.png`, `logo.png`). **Optional:** Home Assistant **2026.3+** serves these locally. On older HA versions the integration still works; the settings icon may show a generic placeholder because `lmkw` is not on the global brands CDN.
 
-If you see **“icon not available”**:
-
-1. **Update the integration in HACS** to the latest version (v0.1.2+ includes brand assets).
-2. **Restart Home Assistant** after updating.
-3. Confirm **Home Assistant ≥ 2026.3** (Settings → About).
-4. On your HA host, check the file exists: `config/custom_components/lmkw/brand/icon.png`.
-
-Versions before 0.1.1 did not ship brand files. Home Assistant before 2026.3 cannot load inline brand icons (CDN entry for `lmkw` is not on brands.home-assistant.io).
+If you see **“icon not available”** on an older Home Assistant version, that is cosmetic only — you do not need to upgrade HA unless you want the elephant icon in the UI.
 
 ## Lmkw server database
 
