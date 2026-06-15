@@ -126,7 +126,7 @@ class LmkwWatchesCard extends HTMLElement {
     const insightHtml = summary
       ? `<p class="insight">${this._escape(summary)}</p>`
       : hasHit
-        ? `<p class="insight insight--pulse">Fresh signal detected — open for details</p>`
+        ? `<p class="insight insight--pulse">Tracks spotted on the savannah - open for the report</p>`
         : "";
 
     return `
@@ -159,13 +159,14 @@ class LmkwWatchesCard extends HTMLElement {
   _render() {
     if (!this._hass) return;
     const watches = this._watches();
+    const total = watches.length;
     const updates = watches.filter((w) => w.state === "update_found").length;
     const subtitle =
-      watches.length === 0
-        ? "Your personal signal desk"
+      total === 0
+        ? "Set an observer on the savannah"
         : updates > 0
-          ? `${updates} live update${updates === 1 ? "" : "s"} · ${watches.length} watch${watches.length === 1 ? "" : "es"}`
-          : `${watches.length} watch${watches.length === 1 ? "" : "es"} on patrol`;
+          ? `${updates} update${updates === 1 ? "" : "s"} spotted | ${total} watch${total === 1 ? "" : "es"} on patrol`
+          : `${total} watch${total === 1 ? "" : "es"} on patrol`;
 
     const listHtml = watches.length
       ? `<div class="watch-grid">${watches.map((w) => this._renderWatch(w)).join("")}</div>`
@@ -615,7 +616,7 @@ class LmkwWatchesCard extends HTMLElement {
               <h2 class="title">Let Me Know When</h2>
               <p class="subtitle">${this._escape(subtitle)}</p>
             </div>
-            ${updates > 0 ? `<div class="hero-badge hero-badge--update"><ha-icon icon="mdi:flash"></ha-icon>${updates} live</div>` : `<div class="hero-badge hero-badge--live"><ha-icon icon="mdi:shield-check"></ha-icon>Live</div>`}
+            ${total > 0 ? `<div class="hero-badge hero-badge--live"><ha-icon icon="mdi:binoculars"></ha-icon>${total} on patrol</div>` : `<div class="hero-badge hero-badge--live"><ha-icon icon="mdi:binoculars"></ha-icon>Ready</div>`}
           </header>
           <div class="content">${listHtml}</div>
         </div>
