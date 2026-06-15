@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Let Me Know When",
+        "description": "Connect with a Premium/Ultra API token from Lmkw Account settings.",
+        "data": {
+          "base_url": "Site URL",
+          "api_token": "API token"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach Lmkw or the token was rejected.",
+      "invalid_auth": "Invalid API token.",
+      "subscription_required": "Premium or Ultra subscription is required for API access.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This Lmkw account is already configured."
+    }
+  }
+}
