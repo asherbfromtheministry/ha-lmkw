@@ -40,6 +40,9 @@ class LmkwWatchSensor(CoordinatorEntity[LmkwDataUpdateCoordinator], SensorEntity
 
     def _apply(self, watch: dict) -> None:
         self._attr_native_value = watch.get("status")
+        latest = watch.get("latestFromWeb") or {}
+        facts = latest.get("facts") if isinstance(latest.get("facts"), list) else []
+        sources = latest.get("sources") if isinstance(latest.get("sources"), list) else []
         self._attr_extra_state_attributes = {
             "display_title": watch.get("displayTitle"),
             "query_text": watch.get("queryText"),
@@ -50,6 +53,11 @@ class LmkwWatchSensor(CoordinatorEntity[LmkwDataUpdateCoordinator], SensorEntity
             "tags": watch.get("tags") or [],
             "url": watch.get("url"),
             "watch_id": self._watch_id,
+            "latest_summary": latest.get("summary"),
+            "latest_detected_at": latest.get("detectedAt"),
+            "latest_significant_update": latest.get("significantUpdate"),
+            "latest_facts": facts,
+            "latest_sources": sources,
         }
 
     def _handle_coordinator_update(self) -> None:
