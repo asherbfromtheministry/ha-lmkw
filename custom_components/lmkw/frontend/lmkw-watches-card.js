@@ -235,7 +235,6 @@ class LmkwWatchesCard extends HTMLElement {
       <style>
         :host {
           display: block;
-          /* Lmkw site traffic-light palette (TrafficStatusPill.svelte) */
           --lmkw-blue-bg: #bbdefb;
           --lmkw-blue-ink: #0d3a5c;
           --lmkw-blue-lamp: #64b5f6;
@@ -557,10 +556,6 @@ class LmkwWatchesCard extends HTMLElement {
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
-        }
-
-        .insight--preview {
-          margin-bottom: 0.15rem;
         }
 
         .watch-detail {
