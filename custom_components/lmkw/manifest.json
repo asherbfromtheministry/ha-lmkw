@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/asherbfromtheministry/ha-lmkw/issues",
   "name": "Let Me Know When",
   "requirements": ["aiohttp>=3.9.0"],
-  "version": "0.1.5"
+  "version": "0.1.6"
 }

@@ -43,13 +43,15 @@ The integration polls your watches every 10 minutes.
 
 ## Lovelace card
 
-Bundled card type: `custom:lmkw-watches` (registers automatically in storage-mode Lovelace).
+Bundled card type: `custom:lmkw-watches` (registers automatically in storage-mode Lovelace). The card uses the same **traffic-light colours** as [letmeknowwhen.net](https://letmeknowwhen.net): **blue** = update found, **green** = monitoring, **amber** = postponed, **red** = dismissed.
 
 ```yaml
 type: custom:lmkw-watches
 integration: lmkw
 max_items: 20
 ```
+
+Each watch tile shows title, tags, status pill, last-checked time, and a link to the watch on Lmkw. Updates sort to the top.
 
 ## For maintainers
 

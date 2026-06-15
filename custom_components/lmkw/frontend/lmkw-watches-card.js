@@ -66,30 +66,34 @@ class LmkwWatchesCard extends HTMLElement {
       case "update_found":
         return {
           label: "Update found",
-          cls: "status--hit",
+          cls: "status--blue",
           icon: "mdi:bell-ring-outline",
-          accent: "#fbbf24",
+          accent: "#1565c0",
+          lamp: "#64b5f6",
         };
       case "postponed":
         return {
-          label: "Snoozed",
-          cls: "status--snooze",
+          label: "Postponed",
+          cls: "status--amber",
           icon: "mdi:clock-outline",
-          accent: "#60a5fa",
+          accent: "#f57f17",
+          lamp: "#ffd54f",
         };
       case "dismissed":
         return {
           label: "Dismissed",
-          cls: "status--muted",
+          cls: "status--red",
           icon: "mdi:archive-outline",
-          accent: "#94a3b8",
+          accent: "#c62828",
+          lamp: "#ef9a9a",
         };
       default:
         return {
-          label: "Watching",
-          cls: "status--watch",
+          label: "Monitoring",
+          cls: "status--green",
           icon: "mdi:radar",
-          accent: "#34d399",
+          accent: "#2e7d32",
+          lamp: "#81c784",
         };
     }
   }
@@ -126,7 +130,7 @@ class LmkwWatchesCard extends HTMLElement {
         : "";
 
     return `
-      <a class="watch ${hasHit ? "watch--hit" : ""}" href="${this._escape(url)}" target="_blank" rel="noopener" style="--watch-accent:${meta.accent}">
+      <a class="watch ${hasHit ? "watch--update" : ""}" href="${this._escape(url)}" target="_blank" rel="noopener" style="--watch-accent:${meta.accent};--watch-lamp:${meta.lamp}">
         <div class="watch-accent" aria-hidden="true"></div>
         <div class="watch-body">
           <div class="watch-top">
@@ -139,7 +143,7 @@ class LmkwWatchesCard extends HTMLElement {
               ${tagHtml}
             </div>
             <div class="watch-status ${meta.cls}">
-              <span class="status-dot"></span>
+              <span class="status-dot" style="background: radial-gradient(circle at 30% 30%, var(--watch-lamp), var(--watch-accent))"></span>
               <span>${this._escape(meta.label)}</span>
             </div>
           </div>
@@ -181,13 +185,27 @@ class LmkwWatchesCard extends HTMLElement {
       <style>
         :host {
           display: block;
-          --lmkw-gold: #fbbf24;
-          --lmkw-teal: #34d399;
-          --lmkw-sky: #64b5f6;
+          /* Lmkw site traffic-light palette (TrafficStatusPill.svelte) */
+          --lmkw-blue-bg: #bbdefb;
+          --lmkw-blue-ink: #0d3a5c;
+          --lmkw-blue-lamp: #64b5f6;
+          --lmkw-blue-deep: #1565c0;
+          --lmkw-green-bg: #c8e6c9;
+          --lmkw-green-ink: #1b4d1e;
+          --lmkw-green-lamp: #81c784;
+          --lmkw-green-deep: #2e7d32;
+          --lmkw-amber-bg: #ffe082;
+          --lmkw-amber-ink: #6d4c00;
+          --lmkw-amber-lamp: #ffd54f;
+          --lmkw-amber-deep: #f57f17;
+          --lmkw-red-bg: #ffcdd2;
+          --lmkw-red-ink: #7f1d1d;
+          --lmkw-red-lamp: #ef9a9a;
+          --lmkw-red-deep: #c62828;
+          --lmkw-teal: #3d7e6b;
+          --lmkw-cream: #fdf9eb;
           --lmkw-ink: #e8edf5;
           --lmkw-muted: rgba(232, 237, 245, 0.62);
-          --lmkw-glass: rgba(12, 18, 28, 0.72);
-          --lmkw-border: rgba(144, 164, 174, 0.55);
           --lmkw-radius: 18px;
           font-family: var(--ha-font-family, system-ui, sans-serif);
         }
@@ -198,10 +216,9 @@ class LmkwWatchesCard extends HTMLElement {
           padding: 1px;
           background: linear-gradient(
             135deg,
-            rgba(100, 181, 246, 0.85) 0%,
-            rgba(52, 211, 153, 0.45) 35%,
-            rgba(251, 191, 36, 0.55) 70%,
-            rgba(144, 164, 174, 0.35) 100%
+            rgba(21, 101, 192, 0.75) 0%,
+            rgba(61, 126, 107, 0.65) 40%,
+            rgba(46, 125, 50, 0.5) 100%
           );
           box-shadow:
             0 0 0 1px rgba(255, 255, 255, 0.04) inset,
@@ -214,8 +231,8 @@ class LmkwWatchesCard extends HTMLElement {
           position: relative;
           border-radius: var(--lmkw-radius);
           background:
-            radial-gradient(120% 80% at 100% 0%, rgba(100, 181, 246, 0.14), transparent 55%),
-            radial-gradient(90% 60% at 0% 100%, rgba(52, 211, 153, 0.1), transparent 50%),
+            radial-gradient(120% 80% at 100% 0%, rgba(21, 101, 192, 0.16), transparent 55%),
+            radial-gradient(90% 60% at 0% 100%, rgba(46, 125, 50, 0.12), transparent 50%),
             linear-gradient(165deg, rgba(18, 24, 36, 0.96), rgba(8, 12, 20, 0.98));
           overflow: hidden;
         }
@@ -245,13 +262,13 @@ class LmkwWatchesCard extends HTMLElement {
           border-radius: 0.85rem;
           display: grid;
           place-items: center;
-          background: linear-gradient(145deg, rgba(100, 181, 246, 0.22), rgba(52, 211, 153, 0.12));
+          background: linear-gradient(145deg, rgba(21, 101, 192, 0.2), rgba(61, 126, 107, 0.14));
           border: 1px solid rgba(255, 255, 255, 0.12);
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
         }
 
         .brand-mark ha-icon {
-          color: var(--lmkw-sky);
+          color: var(--lmkw-blue-lamp);
           --mdc-icon-size: 1.45rem;
           filter: drop-shadow(0 0 10px rgba(100, 181, 246, 0.55));
         }
@@ -259,7 +276,7 @@ class LmkwWatchesCard extends HTMLElement {
         .brand-glow {
           position: absolute;
           inset: -30%;
-          background: radial-gradient(circle, rgba(100, 181, 246, 0.35), transparent 70%);
+          background: radial-gradient(circle, rgba(61, 126, 107, 0.35), transparent 70%);
           pointer-events: none;
           animation: breathe 4s ease-in-out infinite;
         }
@@ -281,7 +298,7 @@ class LmkwWatchesCard extends HTMLElement {
           line-height: 1.15;
           font-weight: 800;
           letter-spacing: -0.02em;
-          background: linear-gradient(90deg, #f8fafc 0%, #dbeafe 45%, #a7f3d0 100%);
+          background: linear-gradient(90deg, #f8fafc 0%, #bbdefb 42%, #c8e6c9 100%);
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
@@ -306,15 +323,15 @@ class LmkwWatchesCard extends HTMLElement {
         }
 
         .hero-badge--live {
-          color: #052e1a;
-          background: linear-gradient(135deg, #6ee7b7, #34d399);
-          box-shadow: 0 0 18px rgba(52, 211, 153, 0.35);
+          color: var(--lmkw-green-ink);
+          background: color-mix(in srgb, var(--lmkw-green-bg) 75%, var(--lmkw-cream));
+          box-shadow: 0 0 18px rgba(46, 125, 50, 0.35);
         }
 
-        .hero-badge--hit {
-          color: #78350f;
-          background: linear-gradient(135deg, #fde68a, #fbbf24);
-          box-shadow: 0 0 18px rgba(251, 191, 36, 0.4);
+        .hero-badge--update {
+          color: var(--lmkw-blue-ink);
+          background: color-mix(in srgb, var(--lmkw-blue-bg) 78%, var(--lmkw-cream));
+          box-shadow: 0 0 18px rgba(21, 101, 192, 0.4);
           animation: breathe 3s ease-in-out infinite;
         }
 
@@ -357,9 +374,9 @@ class LmkwWatchesCard extends HTMLElement {
             0 0 24px color-mix(in srgb, var(--watch-accent) 22%, transparent);
         }
 
-        .watch--hit {
-          border-color: rgba(251, 191, 36, 0.35);
-          box-shadow: 0 0 22px rgba(251, 191, 36, 0.08);
+        .watch--update {
+          border-color: rgba(21, 101, 192, 0.45);
+          box-shadow: 0 0 22px rgba(21, 101, 192, 0.12);
         }
 
         .watch-accent {
@@ -404,7 +421,7 @@ class LmkwWatchesCard extends HTMLElement {
           position: absolute;
           inset: -4px;
           border-radius: 0.75rem;
-          border: 1px solid rgba(251, 191, 36, 0.45);
+          border: 1px solid rgba(21, 101, 192, 0.5);
           animation: ping 2.2s ease-out infinite;
         }
 
@@ -436,9 +453,9 @@ class LmkwWatchesCard extends HTMLElement {
           text-transform: uppercase;
           padding: 0.12rem 0.42rem;
           border-radius: 999px;
-          color: rgba(232, 237, 245, 0.88);
-          background: rgba(100, 181, 246, 0.12);
-          border: 1px solid rgba(100, 181, 246, 0.18);
+          color: var(--lmkw-teal);
+          background: color-mix(in srgb, var(--lmkw-teal) 14%, transparent);
+          border: 1px solid color-mix(in srgb, var(--lmkw-teal) 28%, transparent);
         }
 
         .watch-status {
@@ -458,28 +475,28 @@ class LmkwWatchesCard extends HTMLElement {
           width: 0.42rem;
           height: 0.42rem;
           border-radius: 50%;
-          background: currentColor;
-          box-shadow: 0 0 10px currentColor;
+          flex-shrink: 0;
+          box-shadow: 0 0 0 1px color-mix(in srgb, #000 12%, transparent);
         }
 
-        .status--hit {
-          color: #78350f;
-          background: linear-gradient(135deg, #fde68a, #fbbf24);
+        .status--blue {
+          color: var(--lmkw-blue-ink);
+          background: color-mix(in srgb, var(--lmkw-blue-bg) 78%, var(--lmkw-cream));
         }
 
-        .status--watch {
-          color: #064e3b;
-          background: linear-gradient(135deg, #a7f3d0, #34d399);
+        .status--green {
+          color: var(--lmkw-green-ink);
+          background: color-mix(in srgb, var(--lmkw-green-bg) 75%, var(--lmkw-cream));
         }
 
-        .status--snooze {
-          color: #1e3a8a;
-          background: linear-gradient(135deg, #bfdbfe, #60a5fa);
+        .status--amber {
+          color: var(--lmkw-amber-ink);
+          background: color-mix(in srgb, var(--lmkw-amber-bg) 82%, var(--lmkw-cream));
         }
 
-        .status--muted {
-          color: #334155;
-          background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+        .status--red {
+          color: var(--lmkw-red-ink);
+          background: color-mix(in srgb, var(--lmkw-red-bg) 78%, var(--lmkw-cream));
         }
 
         .insight {
@@ -494,7 +511,7 @@ class LmkwWatchesCard extends HTMLElement {
         }
 
         .insight--pulse {
-          color: rgba(251, 191, 36, 0.92);
+          color: rgba(100, 181, 246, 0.95);
         }
 
         .watch-foot {
@@ -539,7 +556,7 @@ class LmkwWatchesCard extends HTMLElement {
 
         .empty-orbit ha-icon {
           --mdc-icon-size: 1.65rem;
-          color: var(--lmkw-sky);
+          color: var(--lmkw-blue-lamp);
           filter: drop-shadow(0 0 12px rgba(100, 181, 246, 0.45));
         }
 
@@ -598,7 +615,7 @@ class LmkwWatchesCard extends HTMLElement {
               <h2 class="title">Let Me Know When</h2>
               <p class="subtitle">${this._escape(subtitle)}</p>
             </div>
-            ${updates > 0 ? `<div class="hero-badge hero-badge--hit"><ha-icon icon="mdi:flash"></ha-icon>${updates} live</div>` : `<div class="hero-badge hero-badge--live"><ha-icon icon="mdi:shield-check"></ha-icon>Live</div>`}
+            ${updates > 0 ? `<div class="hero-badge hero-badge--update"><ha-icon icon="mdi:flash"></ha-icon>${updates} live</div>` : `<div class="hero-badge hero-badge--live"><ha-icon icon="mdi:shield-check"></ha-icon>Live</div>`}
           </header>
           <div class="content">${listHtml}</div>
         </div>
