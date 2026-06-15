@@ -1,13 +1,13 @@
 {
+  "domain": "lmkw",
+  "name": "Let Me Know When",
   "codeowners": ["@asherbfromtheministry"],
   "config_flow": true,
   "dependencies": ["frontend", "http"],
   "documentation": "https://github.com/asherbfromtheministry/ha-lmkw",
-  "domain": "lmkw",
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/asherbfromtheministry/ha-lmkw/issues",
-  "name": "Let Me Know When",
   "requirements": ["aiohttp>=3.9.0"],
   "version": "0.1.6"
 }
