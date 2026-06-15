@@ -90,6 +90,10 @@ integration: lmkw
 max_items: 20
 ```
 
+## Brand icon
+
+Icons live at `custom_components/lmkw/brand/icon.png` and `logo.png` (sourced from the Lmkw elephant mascot). Home Assistant 2026.3+ serves these via the local brands API. After updating, **re-download or update the integration in HACS** and restart HA to pick up new assets.
+
 ## Lmkw server database
 
 Users need the `user_api_token` table on the Lmkw server. SQL: `scripts/add-user-api-tokens.sql` in the main [lmkw](https://github.com/ashleybaker75/lmkw) app repo.
