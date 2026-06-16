@@ -8,6 +8,13 @@ class LmkwWatchesCard extends HTMLElement {
     this.attachShadow({ mode: "open" });
     this._config = { max_items: 20 };
     this._hass = null;
+    this._detailOpen = Object.create(null);
+    this.shadowRoot.addEventListener("toggle", (e) => {
+      const details = e.target;
+      if (!details?.classList?.contains("watch-detail")) return;
+      const watch = details.closest("[data-watch-id]");
+      if (watch) this._detailOpen[watch.dataset.watchId] = details.open;
+    });
   }
 
   setConfig(config) {
@@ -123,6 +130,7 @@ class LmkwWatchesCard extends HTMLElement {
     const sources = Array.isArray(s.attributes.latest_sources) ? s.attributes.latest_sources : [];
     const hasHit = status === "update_found";
     const hasDetail = Boolean(fullSummary || facts.length || sources.length);
+    const detailOpen = this._detailOpen[watchId] ?? hasHit;
     const preview = this._summarySnippet(fullSummary, 140);
 
     const tagHtml = tags.length
@@ -154,7 +162,7 @@ class LmkwWatchesCard extends HTMLElement {
       : "";
 
     const detailHtml = hasDetail
-      ? `<details class="watch-detail"${hasHit ? " open" : ""}>
+      ? `<details class="watch-detail"${detailOpen ? " open" : ""}>
           <summary class="detail-toggle">
             <span class="detail-toggle-label">Ranger report</span>
             <ha-icon class="detail-chevron" icon="mdi:chevron-down"></ha-icon>
