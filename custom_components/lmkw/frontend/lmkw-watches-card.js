@@ -820,7 +820,7 @@ class LmkwWatchesCard extends HTMLElement {
           <header class="hero">
             <div class="brand-mark">
               <span class="brand-glow"></span>
-              <img src="/lmkw/icon_asset.png" alt="" width="42" height="42" />
+              <img src="/lmkw/elephant_noBGzo.png" alt="" width="42" height="42" />
             </div>
             <div class="hero-copy">
               <h2 class="title">Let Me Know When...</h2>
