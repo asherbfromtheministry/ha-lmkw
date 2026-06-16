@@ -9,11 +9,22 @@ class LmkwWatchesCard extends HTMLElement {
     this._config = { max_items: 20 };
     this._hass = null;
     this._detailOpen = Object.create(null);
-    this.shadowRoot.addEventListener("toggle", (e) => {
-      const details = e.target;
-      if (!details?.classList?.contains("watch-detail")) return;
-      const watch = details.closest("[data-watch-id]");
-      if (watch) this._detailOpen[watch.dataset.watchId] = details.open;
+    this._lastFp = "";
+    this.shadowRoot.addEventListener("click", (e) => {
+      const btn = e.target.closest("button.detail-toggle");
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const watch = btn.closest("[data-watch-id]");
+      if (!watch) return;
+      const id = watch.dataset.watchId;
+      const detail = watch.querySelector(".watch-detail");
+      const next = !detail?.classList.contains("watch-detail--open");
+      this._detailOpen[id] = next;
+      if (detail) {
+        detail.classList.toggle("watch-detail--open", next);
+        btn.setAttribute("aria-expanded", String(next));
+      }
     });
   }
 
@@ -23,7 +34,29 @@ class LmkwWatchesCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    const watches = this._watches();
+    const fp = this._watchFingerprint(watches);
+    if (fp === this._lastFp) return;
+    this._lastFp = fp;
     this._render();
+  }
+
+  _watchFingerprint(watches) {
+    return watches
+      .map((s) => {
+        const a = s.attributes;
+        return [
+          s.entity_id,
+          s.state,
+          a.last_checked_at,
+          a.latest_detected_at,
+          a.latest_summary,
+          JSON.stringify(a.latest_facts?.slice(0, 8) ?? []),
+          JSON.stringify(a.latest_sources?.slice(0, 6) ?? []),
+          a.display_title || a.query_text || "",
+        ].join("|");
+      })
+      .join(";");
   }
 
   getCardSize() {
@@ -130,7 +163,7 @@ class LmkwWatchesCard extends HTMLElement {
     const sources = Array.isArray(s.attributes.latest_sources) ? s.attributes.latest_sources : [];
     const hasHit = status === "update_found";
     const hasDetail = Boolean(fullSummary || facts.length || sources.length);
-    const detailOpen = this._detailOpen[watchId] ?? hasHit;
+    const detailOpen = !!this._detailOpen[watchId];
     const preview = this._summarySnippet(fullSummary, 140);
 
     const tagHtml = tags.length
@@ -162,18 +195,18 @@ class LmkwWatchesCard extends HTMLElement {
       : "";
 
     const detailHtml = hasDetail
-      ? `<details class="watch-detail"${detailOpen ? " open" : ""}>
-          <summary class="detail-toggle">
+      ? `<div class="watch-detail${detailOpen ? " watch-detail--open" : ""}">
+          <button type="button" class="detail-toggle" aria-expanded="${detailOpen ? "true" : "false"}">
             <span class="detail-toggle-label">Ranger report</span>
             <ha-icon class="detail-chevron" icon="mdi:chevron-down"></ha-icon>
-          </summary>
+          </button>
           <div class="detail-panel">
             ${fullSummary ? `<p class="detail-summary">${this._escape(fullSummary)}</p>` : ""}
             ${factsHtml}
             ${sourcesHtml}
             ${detected ? `<p class="detail-meta">Reported ${this._escape(detected)}</p>` : ""}
           </div>
-        </details>`
+        </div>`
       : hasHit
         ? `<p class="insight insight--pulse">Tracks spotted on the savannah - open for the report</p>`
         : "";
@@ -579,19 +612,19 @@ class LmkwWatchesCard extends HTMLElement {
           align-items: center;
           justify-content: space-between;
           gap: 0.5rem;
+          width: 100%;
           padding: 0.48rem 0.62rem;
+          border: 0;
+          background: transparent;
           cursor: pointer;
-          list-style: none;
+          font-family: inherit;
           font-size: 0.68rem;
           font-weight: 800;
           letter-spacing: 0.05em;
           text-transform: uppercase;
           color: rgba(100, 181, 246, 0.95);
           user-select: none;
-        }
-
-        .detail-toggle::-webkit-details-marker {
-          display: none;
+          text-align: left;
         }
 
         .detail-toggle-label {
@@ -606,13 +639,18 @@ class LmkwWatchesCard extends HTMLElement {
           opacity: 0.85;
         }
 
-        .watch-detail[open] .detail-chevron {
+        .watch-detail--open .detail-chevron {
           transform: rotate(180deg);
         }
 
         .detail-panel {
+          display: none;
           padding: 0 0.65rem 0.65rem;
           border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .watch-detail--open .detail-panel {
+          display: block;
         }
 
         .detail-summary {
