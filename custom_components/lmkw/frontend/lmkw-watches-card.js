@@ -338,7 +338,7 @@ class LmkwWatchesCard extends HTMLElement {
         .hero {
           position: relative;
           display: grid;
-          grid-template-columns: auto 1fr auto;
+          grid-template-columns: auto 1fr;
           gap: 0.85rem;
           align-items: center;
           padding: 1rem 1.05rem 0.85rem;
@@ -355,6 +355,14 @@ class LmkwWatchesCard extends HTMLElement {
           background: linear-gradient(145deg, rgba(21, 101, 192, 0.2), rgba(61, 126, 107, 0.14));
           border: 1px solid rgba(255, 255, 255, 0.12);
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+        }
+
+        .brand-mark img {
+          width: 2.1rem;
+          height: 2.1rem;
+          object-fit: contain;
+          display: block;
+          filter: drop-shadow(0 0 10px rgba(100, 181, 246, 0.35));
         }
 
         .brand-mark ha-icon {
@@ -812,14 +820,12 @@ class LmkwWatchesCard extends HTMLElement {
           <header class="hero">
             <div class="brand-mark">
               <span class="brand-glow"></span>
-              <ha-icon icon="mdi:eye-circle-outline"></ha-icon>
+              <img src="/lmkw/icon_asset.png" alt="" width="42" height="42" />
             </div>
             <div class="hero-copy">
-              <p class="kicker">Intelligence</p>
-              <h2 class="title">Let Me Know When</h2>
+              <h2 class="title">Let Me Know When...</h2>
               <p class="subtitle">${this._escape(subtitle)}</p>
             </div>
-            ${total > 0 ? `<div class="hero-badge hero-badge--live"><ha-icon icon="mdi:binoculars"></ha-icon>${total} on patrol</div>` : `<div class="hero-badge hero-badge--live"><ha-icon icon="mdi:binoculars"></ha-icon>Ready</div>`}
           </header>
           <div class="content">${listHtml}</div>
         </div>
