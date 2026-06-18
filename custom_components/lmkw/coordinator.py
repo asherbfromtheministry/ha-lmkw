@@ -15,7 +15,7 @@ from .const import UPDATE_INTERVAL_SECONDS
 _LOGGER = logging.getLogger(__name__)
 
 
-class LmkwDataUpdateCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
+class LmkwDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Fetch watches from Lmkw."""
 
     def __init__(self, hass: HomeAssistant, client: LmkwApiClient) -> None:
@@ -27,7 +27,7 @@ class LmkwDataUpdateCoordinator(DataUpdateCoordinator[list[dict[str, Any]]]):
         )
         self.client = client
 
-    async def _async_update_data(self) -> list[dict[str, Any]]:
+    async def _async_update_data(self) -> dict[str, Any]:
         try:
             return await self.client.async_get_watches()
         except LmkwAuthError as err:

@@ -38,6 +38,7 @@ The integration polls your watches every 10 minutes.
 
 | Entity | Description |
 |--------|-------------|
+| `sensor.lmkw_account` | Signed-in account display name (shown on the Lovelace card header) |
 | `sensor.lmkw_watch_<id>` | Title, status, last checked, link, **latest from the web** (summary, facts, sources), plus **`ranger_report`** / **`latest_facts_display`** for readable entity attributes |
 | `binary_sensor.lmkw_watch_<id>_update` | On when status is `update_found` |
 

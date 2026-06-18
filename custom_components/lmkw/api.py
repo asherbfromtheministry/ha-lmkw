@@ -21,7 +21,7 @@ class LmkwApiClient:
         self._api_token = api_token.strip()
         self._session = session
 
-    async def async_get_watches(self) -> list[dict]:
+    async def async_get_watches(self) -> dict:
         url = f"{self._base_url}/api/v1/watches"
         headers = {"Authorization": f"Bearer {self._api_token}"}
         async with self._session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=30)) as resp:
@@ -37,4 +37,7 @@ class LmkwApiClient:
             watches = body.get("watches")
             if not isinstance(watches, list):
                 raise LmkwApiError("Malformed watches payload")
-            return watches
+            user = body.get("user")
+            if user is not None and not isinstance(user, dict):
+                raise LmkwApiError("Malformed user payload")
+            return {"watches": watches, "user": user or {}}

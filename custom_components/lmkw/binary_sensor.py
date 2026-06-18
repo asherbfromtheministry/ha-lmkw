@@ -10,6 +10,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import LmkwDataUpdateCoordinator
+from .sensor import _coordinator_watches
 
 
 async def async_setup_entry(
@@ -19,7 +20,7 @@ async def async_setup_entry(
 ) -> None:
     coordinator: LmkwDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
-        LmkwWatchUpdateBinary(coordinator, watch) for watch in (coordinator.data or [])
+        LmkwWatchUpdateBinary(coordinator, watch) for watch in _coordinator_watches(coordinator)
     )
 
 
@@ -41,7 +42,7 @@ class LmkwWatchUpdateBinary(CoordinatorEntity[LmkwDataUpdateCoordinator], Binary
         self._attr_is_on = watch.get("status") == "update_found"
 
     def _handle_coordinator_update(self) -> None:
-        for watch in self.coordinator.data or []:
+        for watch in _coordinator_watches(self.coordinator):
             if int(watch.get("id", -1)) == self._watch_id:
                 self._apply(watch)
                 break

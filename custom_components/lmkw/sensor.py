@@ -12,15 +12,47 @@ from .const import DOMAIN
 from .coordinator import LmkwDataUpdateCoordinator
 
 
+def _coordinator_watches(coordinator: LmkwDataUpdateCoordinator) -> list[dict]:
+    data = coordinator.data or {}
+    watches = data.get("watches")
+    return watches if isinstance(watches, list) else []
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities,
 ) -> None:
     coordinator: LmkwDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    watches = _coordinator_watches(coordinator)
     async_add_entities(
-        LmkwWatchSensor(coordinator, watch) for watch in (coordinator.data or [])
+        [LmkwAccountSensor(coordinator)]
+        + [LmkwWatchSensor(coordinator, watch) for watch in watches]
     )
+
+
+class LmkwAccountSensor(CoordinatorEntity[LmkwDataUpdateCoordinator], SensorEntity):
+    """Signed-in Lmkw account name for dashboard cards."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_has_entity_name = True
+    _attr_icon = "mdi:account-circle"
+    _attr_name = "Account"
+    _attr_unique_id = "lmkw_account"
+
+    def __init__(self, coordinator: LmkwDataUpdateCoordinator) -> None:
+        super().__init__(coordinator)
+        self._apply()
+
+    def _apply(self) -> None:
+        user = (self.coordinator.data or {}).get("user") or {}
+        name = str(user.get("name") or "").strip()
+        self._attr_native_value = name or None
+        self._attr_extra_state_attributes = {"lmkw_account": True}
+
+    def _handle_coordinator_update(self) -> None:
+        self._apply()
+        super()._handle_coordinator_update()
 
 
 class LmkwWatchSensor(CoordinatorEntity[LmkwDataUpdateCoordinator], SensorEntity):
@@ -102,7 +134,7 @@ class LmkwWatchSensor(CoordinatorEntity[LmkwDataUpdateCoordinator], SensorEntity
         }
 
     def _handle_coordinator_update(self) -> None:
-        for watch in self.coordinator.data or []:
+        for watch in _coordinator_watches(self.coordinator):
             if int(watch.get("id", -1)) == self._watch_id:
                 self._apply(watch)
                 break

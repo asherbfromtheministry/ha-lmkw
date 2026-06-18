@@ -35,7 +35,7 @@ class LmkwWatchesCard extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
     const watches = this._watches();
-    const fp = this._watchFingerprint(watches);
+    const fp = `${this._watchFingerprint(watches)}|${this._accountName()}`;
     if (fp === this._lastFp) return;
     this._lastFp = fp;
     this._render();
@@ -78,6 +78,16 @@ class LmkwWatchesCard extends HTMLElement {
         return tb - ta;
       })
       .slice(0, max);
+  }
+
+  _accountName() {
+    if (!this._hass) return "";
+    for (const s of Object.values(this._hass.states)) {
+      if (s.attributes?.lmkw_account === true) {
+        return String(s.state ?? "").trim();
+      }
+    }
+    return "";
   }
 
   _escape(text) {
@@ -249,6 +259,7 @@ class LmkwWatchesCard extends HTMLElement {
   _render() {
     if (!this._hass) return;
     const watches = this._watches();
+    const accountName = this._accountName();
     const total = watches.length;
     const updates = watches.filter((w) => w.state === "update_found").length;
     const subtitle =
@@ -338,9 +349,9 @@ class LmkwWatchesCard extends HTMLElement {
         .hero {
           position: relative;
           display: grid;
-          grid-template-columns: auto 1fr;
+          grid-template-columns: auto 1fr auto;
           gap: 0.85rem;
-          align-items: center;
+          align-items: start;
           padding: 1rem 1.05rem 0.85rem;
           border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
@@ -406,6 +417,19 @@ class LmkwWatchesCard extends HTMLElement {
           margin: 0.28rem 0 0;
           font-size: 0.76rem;
           color: var(--lmkw-muted);
+        }
+
+        .hero-user {
+          margin: 0.15rem 0 0;
+          font-size: 0.82rem;
+          font-weight: 700;
+          line-height: 1.2;
+          color: var(--lmkw-ink);
+          text-align: right;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 9rem;
         }
 
         .hero-badge {
@@ -826,6 +850,7 @@ class LmkwWatchesCard extends HTMLElement {
               <h2 class="title">Let Me Know When...</h2>
               <p class="subtitle">${this._escape(subtitle)}</p>
             </div>
+            ${accountName ? `<p class="hero-user">${this._escape(accountName)}</p>` : ""}
           </header>
           <div class="content">${listHtml}</div>
         </div>
