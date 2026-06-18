@@ -16,6 +16,22 @@ When a feature touches **both** (e.g. card reads a new API field), ship **two de
 
 ---
 
+## Definition of done (agents)
+
+A ha-lmkw deploy is **not finished** until **all** of the following are true. Do **not** stop early or ask the user to publish anything.
+
+- [ ] `manifest.json` version bumped
+- [ ] Changes committed and **pushed to `origin/main`**
+- [ ] Git tag **`vX.Y.Z`** pushed
+- [ ] **GitHub Release published** for that tag (HACS reads Releases, not tags alone)
+- [ ] Verified latest release at [github.com/asherbfromtheministry/ha-lmkw/releases](https://github.com/asherbfromtheministry/ha-lmkw/releases)
+
+**Never** tell the user to run `gh release create`, open the GitHub Releases UI, or “publish when you get a chance”. **You** publish the release as part of the same task.
+
+If the user says **deploy**, **release**, **ship**, or **publish** for HA work, run the full checklist below yourself.
+
+---
+
 ## Agent / maintainer checklist (ha-lmkw)
 
 Work **only** inside `home-assistant/` (this repo). Remote: `origin` → `https://github.com/asherbfromtheministry/ha-lmkw.git`.
@@ -35,31 +51,87 @@ git commit -m "Short description of change (v0.1.14)."
 git push origin main
 ```
 
-### 3. Tag **and** GitHub Release (both required)
+### 3. Tag, push tag, **publish GitHub Release** (all three)
 
 **HACS uses GitHub Releases, not git tags alone.**  
 Pushing only `git tag v0.1.14` leaves HACS stuck on the previous release (e.g. “Version v0.1.12 will be downloaded”).
 
 ```powershell
-git tag v0.1.14
-git push origin v0.1.14
-gh release create v0.1.14 --title "0.1.14" --notes "One-line summary for users."
+cd c:\temp\lmkw\home-assistant
+$ver = "0.1.14"          # must match manifest.json
+$tag = "v$ver"
+
+git tag $tag
+git push origin $tag
 ```
 
-If `gh` is not authenticated: GitHub → **Releases** → **Draft a new release** → choose existing tag `v0.1.14` → **Publish release**.
+Then **publish the Release** (required — do not skip):
 
-Verify: [github.com/asherbfromtheministry/ha-lmkw/releases](https://github.com/asherbfromtheministry/ha-lmkw/releases) shows the new version at the top.
+**Option A — `gh` (if logged in):**
+
+```powershell
+gh release create $tag --title $ver --notes "User-facing release notes."
+```
+
+**Option B — GitHub API via git credential helper (if `gh` is not logged in):**  
+Use the same credentials that already work for `git push`. Run this yourself; do not delegate to the user.
+
+```powershell
+$ver = "0.1.14"
+$tag = "v$ver"
+$notes = @"
+Brief user-facing summary.
+
+- Bullet for card / entity changes
+- Restart Home Assistant after update
+- Reload integration if new entities
+"@
+
+$stdin = "protocol=https`nhost=github.com`n`n"
+$credOutput = $stdin | git credential fill 2>$null
+$token = ($credOutput | Where-Object { $_ -match '^password=' }) -replace '^password=',''
+if (-not $token) { throw 'No GitHub token from git credential helper — fix git auth, do not ask the user to publish manually.' }
+
+$headers = @{
+  Authorization = "Bearer $token"
+  Accept = 'application/vnd.github+json'
+  'X-GitHub-Api-Version' = '2022-11-28'
+}
+$payload = @{
+  tag_name = $tag
+  name = $ver
+  body = $notes
+  draft = $false
+  prerelease = $false
+} | ConvertTo-Json
+
+try {
+  $r = Invoke-RestMethod -Uri 'https://api.github.com/repos/asherbfromtheministry/ha-lmkw/releases' `
+    -Method Post -Headers $headers -Body $payload -ContentType 'application/json'
+  Write-Output "Published release $($r.tag_name) at $($r.html_url)"
+} catch {
+  if ($_.Exception.Response.StatusCode.value__ -eq 422) {
+    Write-Output "Release $tag already exists — verify it is published (not draft)."
+  } else { throw }
+}
+```
+
+**Verify:** GET [latest release API](https://api.github.com/repos/asherbfromtheministry/ha-lmkw/releases/latest) shows your tag, or open the releases page and confirm the new version is **Published** (not draft).
 
 ### 4. CI
 
 Confirm **Actions → Validate** is green on `main` (HACS + hassfest).
 
-### 5. On Home Assistant (after release)
+### 5. On Home Assistant (optional — agent may do via HA MCP)
 
-1. HACS → Integrations → **Let Me Know When** → **Update** (should offer the new release version).
-2. **Restart Home Assistant** (`custom_components` changes require a full restart).
-3. If the release adds new entities (e.g. `sensor.lmkw_account`): **Settings → Devices & services → Let Me Know When → Reload**.
-4. Hard-refresh the Lovelace dashboard (card JS is cached in the browser).
+If the user’s Home Assistant is reachable (HA MCP):
+
+1. HACS update **`asherbfromtheministry/ha-lmkw`** to the new version
+2. **Restart Home Assistant**
+3. **Reload** the Lmkw integration if new entities were added
+4. Tell the user to hard-refresh the Lovelace dashboard (browser cache)
+
+If HA MCP is unavailable, say the GitHub release is live and HACS will show the new version after cache refresh — **do not** substitute “you publish the release” for step 3 above.
 
 ---
 
@@ -70,7 +142,8 @@ Confirm **Actions → Validate** is green on `main` (HACS + hassfest).
 | `npm run deploy:zip` from repo root | Ships the **web app**, not HACS integration |
 | SSH / FTP extract on `letmeknowwhen.net` | Production host; unrelated to HA install path `/config/custom_components/lmkw` |
 | Push tag without **GitHub Release** | HACS UI keeps showing the old release version |
-| Edit `_lmkw-watches-trim.js` / scratch files at repo root | Canonical card is **`custom_components/lmkw/frontend/lmkkw-watches-card.js`** here only |
+| Stop after `git push` and tell the user to publish | **Your job** — see Definition of done |
+| Edit `_lmkw-watches-trim.js` / scratch files at repo root | Canonical card is **`custom_components/lmkw/frontend/lmkw-watches-card.js`** here only |
 | Assume `home-assistant/` is the same git repo as the main app | It has its **own** `.git`; commits here do not land on the main app unless copied manually |
 
 ---
@@ -95,8 +168,8 @@ Card-only or Python-only changes in **`custom_components/lmkw/`** → **ha-lmkw 
 Brief user-facing summary.
 
 - Bullet for card / entity changes
-- Mention restart HA after update
-- Mention reload integration if new entities
+- Restart Home Assistant after update
+- Reload integration if new entities
 ```
 
 ---
