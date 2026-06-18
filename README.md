@@ -56,6 +56,7 @@ Each watch tile shows title, tags, status pill, last-checked time, and a link to
 
 ## For maintainers
 
+- **Deploy / release (read first):** [DEPLOY.md](./DEPLOY.md)
 - HACS default submission checklist: [HACS_DEFAULT.md](./HACS_DEFAULT.md)
 - Optional [home-assistant/brands](https://github.com/home-assistant/brands) assets: `brands-submission/`
 
