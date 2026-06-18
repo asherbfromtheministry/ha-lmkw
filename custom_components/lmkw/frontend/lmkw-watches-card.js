@@ -90,6 +90,30 @@ class LmkwWatchesCard extends HTMLElement {
     return "";
   }
 
+  _accountInitial(name) {
+    const text = String(name ?? "").trim();
+    if (!text) return "?";
+    return text.charAt(0).toUpperCase();
+  }
+
+  _renderAccountBadge(name) {
+    const safe = this._escape(name);
+    const initial = this._escape(this._accountInitial(name));
+    return `
+      <div class="hero-user-badge" title="${safe}">
+        <span class="hero-user-ring" aria-hidden="true"></span>
+        <span class="hero-user-glow" aria-hidden="true"></span>
+        <span class="hero-user-inner">
+          <span class="hero-user-avatar" aria-hidden="true">${initial}</span>
+          <span class="hero-user-copy">
+            <span class="hero-user-kicker">On patrol</span>
+            <span class="hero-user-name">${safe}</span>
+          </span>
+          <ha-icon class="hero-user-icon" icon="mdi:shield-star-outline" aria-hidden="true"></ha-icon>
+        </span>
+      </div>`;
+  }
+
   _escape(text) {
     return String(text ?? "")
       .replace(/&/g, "&amp;")
@@ -419,17 +443,112 @@ class LmkwWatchesCard extends HTMLElement {
           color: var(--lmkw-muted);
         }
 
-        .hero-user {
-          margin: 0.15rem 0 0;
-          font-size: 0.82rem;
-          font-weight: 700;
-          line-height: 1.2;
-          color: var(--lmkw-ink);
-          text-align: right;
+        .hero-user-badge {
+          position: relative;
+          margin: 0.05rem 0 0;
+          max-width: 11rem;
+          border-radius: 999px;
+          padding: 1px;
+          background: linear-gradient(
+            120deg,
+            rgba(100, 181, 246, 0.95) 0%,
+            rgba(61, 126, 107, 0.85) 45%,
+            rgba(129, 199, 132, 0.75) 100%
+          );
+          box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+            0 10px 28px rgba(0, 0, 0, 0.32),
+            0 0 24px rgba(100, 181, 246, 0.18);
+          overflow: hidden;
+        }
+
+        .hero-user-ring {
+          position: absolute;
+          inset: -40%;
+          background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            rgba(100, 181, 246, 0.55) 80deg,
+            rgba(129, 199, 132, 0.45) 160deg,
+            transparent 240deg
+          );
+          animation: spin 10s linear infinite;
+          opacity: 0.55;
+          pointer-events: none;
+        }
+
+        .hero-user-glow {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 20% 50%, rgba(100, 181, 246, 0.22), transparent 55%);
+          animation: breathe 3.5s ease-in-out infinite;
+          pointer-events: none;
+        }
+
+        .hero-user-inner {
+          position: relative;
+          display: grid;
+          grid-template-columns: auto 1fr auto;
+          align-items: center;
+          gap: 0.45rem;
+          padding: 0.38rem 0.55rem 0.38rem 0.42rem;
+          border-radius: 999px;
+          background:
+            linear-gradient(135deg, rgba(14, 20, 32, 0.96), rgba(8, 12, 20, 0.98));
+          border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .hero-user-avatar {
+          width: 1.65rem;
+          height: 1.65rem;
+          border-radius: 50%;
+          display: grid;
+          place-items: center;
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 0.02em;
+          color: #f8fafc;
+          background: linear-gradient(145deg, var(--lmkw-blue-deep), var(--lmkw-teal));
+          box-shadow:
+            0 0 0 1px rgba(255, 255, 255, 0.14) inset,
+            0 0 14px rgba(100, 181, 246, 0.35);
+        }
+
+        .hero-user-copy {
+          min-width: 0;
+          display: grid;
+          gap: 0.05rem;
+          text-align: left;
+        }
+
+        .hero-user-kicker {
+          font-size: 0.52rem;
+          font-weight: 800;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: rgba(100, 181, 246, 0.88);
+          line-height: 1;
+        }
+
+        .hero-user-name {
+          font-size: 0.78rem;
+          font-weight: 800;
+          line-height: 1.15;
+          letter-spacing: -0.01em;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          max-width: 9rem;
+          background: linear-gradient(90deg, #f8fafc 0%, #bbdefb 55%, #c8e6c9 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+
+        .hero-user-icon {
+          --mdc-icon-size: 0.95rem;
+          color: rgba(129, 199, 132, 0.92);
+          filter: drop-shadow(0 0 8px rgba(129, 199, 132, 0.45));
+          opacity: 0.95;
         }
 
         .hero-badge {
@@ -850,7 +969,7 @@ class LmkwWatchesCard extends HTMLElement {
               <h2 class="title">Let Me Know When...</h2>
               <p class="subtitle">${this._escape(subtitle)}</p>
             </div>
-            ${accountName ? `<p class="hero-user">${this._escape(accountName)}</p>` : ""}
+            ${accountName ? this._renderAccountBadge(accountName) : ""}
           </header>
           <div class="content">${listHtml}</div>
         </div>
