@@ -36,6 +36,20 @@ class JSModuleRegistration:
             url = f"{URL_BASE}/{module['filename']}?v={module['version']}"
             resource = {"type": "module", "url": url}
             existing = await self.lovelace.async_get_resources()
+            prefix = f"{URL_BASE}/{module['filename']}"
+            stale = [r for r in existing if r.get("url", "").startswith(prefix)]
+
             if any(r.get("url") == url for r in existing):
+                for old in stale:
+                    if old.get("url") != url:
+                        await self.lovelace.async_delete_resource(old["id"])
                 continue
+
+            if stale:
+                await self.lovelace.async_update_resource(stale[0]["id"], resource)
+                for old in stale[1:]:
+                    await self.lovelace.async_delete_resource(old["id"])
+                _LOGGER.debug("Updated Lovelace resource for %s to %s", module["filename"], url)
+                continue
+
             await self.lovelace.async_add_resource(resource)
